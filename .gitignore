@@ -1,0 +1,29 @@
+## Build
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+*.cache
+
+## Visual Studio / Rider
+.vs/
+.idea/
+*.DotSettings.user
+
+## Test / artefatos locais
+artifacts/
+TestResults/
+*.trx
+coverage*.json
+coverage*.xml
+
+## OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+## NuGet
+*.nupkg
+**/packages/
