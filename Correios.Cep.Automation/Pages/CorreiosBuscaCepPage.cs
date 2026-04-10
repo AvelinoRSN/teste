@@ -90,12 +90,23 @@ public class CorreiosBuscaCepPage
         }
 
         _wait.Until(d => d.FindElement(By.CssSelector("input[name='endereco'], #endereco")).Displayed);
+        Thread.Sleep(TimeSpan.FromSeconds(2));
     }
 
     public bool ExibeResultadoDeEndereco(string cep)
     {
         var texto = _driver.PageSource.ToLowerInvariant();
         var linhasResultado = _driver.FindElements(By.CssSelector("#resultado-DNEC tbody tr, table tbody tr"));
+        var textoResultado = string.Join(" ", linhasResultado.Select(l => l.Text)).ToLowerInvariant();
+        var textoResultadoSemEspacos = new string(textoResultado.Where(c => !char.IsWhiteSpace(c)).ToArray());
+        var textoLogradouroNormalizado = textoResultadoSemEspacos
+            .Replace("ruaxvdenovembro", "ruaquinzedenovembro", StringComparison.OrdinalIgnoreCase)
+            .Replace("rxvdenovembro", "ruaquinzedenovembro", StringComparison.OrdinalIgnoreCase)
+            .Replace("rquinzedenovembro", "ruaquinzedenovembro", StringComparison.OrdinalIgnoreCase);
+        var textoCidadeUfNormalizado = textoResultadoSemEspacos
+            .Replace("sãopaulo/sp", "saopaulo/sp", StringComparison.OrdinalIgnoreCase)
+            .Replace("sãopaulo-sp", "saopaulo/sp", StringComparison.OrdinalIgnoreCase)
+            .Replace("saopaulo-sp", "saopaulo/sp", StringComparison.OrdinalIgnoreCase);
         var cepNormalizado = cep.Replace("-", string.Empty, StringComparison.OrdinalIgnoreCase);
         var cepComHifen = cep.Length == 8 ? $"{cep[..5]}-{cep[5..]}" : cep;
 
@@ -103,7 +114,9 @@ public class CorreiosBuscaCepPage
                && !texto.Contains("dados não encontrado")
                && !texto.Contains("dados nao encontrado")
                && !texto.Contains("dados nao encontrados")
-               && (texto.Contains(cepComHifen.ToLowerInvariant()) || texto.Contains(cepNormalizado.ToLowerInvariant()));
+               && (textoResultado.Contains(cepComHifen.ToLowerInvariant()) || textoResultado.Contains(cepNormalizado.ToLowerInvariant()))
+               && textoLogradouroNormalizado.Contains("ruaquinzedenovembro")
+               && textoCidadeUfNormalizado.Contains("saopaulo/sp");
     }
 
     public void AcessarPaginaRastreamento()
@@ -169,13 +182,48 @@ public class CorreiosBuscaCepPage
 
         try
         {
-            waitResultado.Until(d => ContemIndicativoDeErroOuObjetoNaoEncontradoNoRastreamento(d.PageSource));
+            waitResultado.Until(_ => ContemIndicativoDeErroOuObjetoNaoEncontradoNoRastreamento(ObterPageSourceComSeguranca()));
         }
         catch (WebDriverTimeoutException)
         {
         }
 
-        return ContemIndicativoDeErroOuObjetoNaoEncontradoNoRastreamento(_driver.PageSource);
+        return ContemIndicativoDeErroOuObjetoNaoEncontradoNoRastreamento(ObterPageSourceComSeguranca());
+    }
+
+    /// <summary>
+    /// Obtém o HTML atual da página com tolerância a falhas transitórias do WebDriver.
+    /// </summary>
+    /// <param name="tentativas">
+    /// Quantidade máxima de tentativas para ler o PageSource antes de desistir.
+    /// </param>
+    /// <param name="esperaEntreTentativasMs">
+    /// Intervalo, em milissegundos, entre as tentativas de leitura.
+    /// </param>
+    /// <returns>
+    /// Retorna o conteúdo HTML da página quando disponível; caso todas as tentativas falhem,
+    /// retorna string vazia para permitir que a validação continue sem lançar exceções.
+    /// </returns>
+    private string ObterPageSourceComSeguranca(int tentativas = 3, int esperaEntreTentativasMs = 250)
+    {
+        for (var tentativa = 1; tentativa <= tentativas; tentativa++)
+        {
+            try
+            {
+                return _driver.PageSource;
+            }
+            catch (WebDriverException)
+            {
+                if (tentativa >= tentativas)
+                {
+                    break;
+                }
+
+                Thread.Sleep(esperaEntreTentativasMs);
+            }
+        }
+
+        return string.Empty;
     }
 
     private static bool ContemIndicativoDeErroOuObjetoNaoEncontradoNoRastreamento(string html)

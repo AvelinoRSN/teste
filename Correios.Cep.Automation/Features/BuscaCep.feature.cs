@@ -109,15 +109,18 @@ namespace Correios.Cep.Automation.Features
     testRunner.Then("devo visualizar um resultado de endereco para o CEP pesquisado", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Entao ");
 #line hidden
 #line 11
-    testRunner.When("eu acesso a pagina de rastreamento dos Correios", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Quando ");
+    testRunner.When("eu volto para a tela inicial de busca", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Quando ");
 #line hidden
 #line 12
-    testRunner.And("eu pesquiso no rastreamento o codigo \"SS987654321BR\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "E ");
+    testRunner.When("eu acesso a pagina de rastreamento dos Correios", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Quando ");
 #line hidden
 #line 13
-    testRunner.Then("devo visualizar a mensagem de que o codigo de rastreamento nao esta correto", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Entao ");
+    testRunner.And("eu pesquiso no rastreamento o codigo \"SS987654321BR\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "E ");
 #line hidden
 #line 14
+    testRunner.Then("devo visualizar a mensagem de que o codigo de rastreamento nao esta correto", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Entao ");
+#line hidden
+#line 15
     testRunner.And("eu fecho o navegador", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "E ");
 #line hidden
             }
